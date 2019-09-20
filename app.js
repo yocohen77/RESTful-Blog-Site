@@ -21,6 +21,8 @@ var Blog = mongoose.model("Blog", blogSchema);
 
 // restful routes
 
+
+// INDEX
 app.get("/", function(req ,res){
     res.redirect("/blogs");
 });
@@ -34,6 +36,27 @@ app.get("/blogs", function(req, res){
         }
     })
 });
+
+// NEW & CREATE
+app.get("/blogs/new", function(req, res){
+    res.render("new");
+});
+
+app.post("/blogs", function(req, res){
+    /*
+        since we named the form variables as part of a blog object ie blog[title], we can simply pass blog directly from body using body-parser
+    */
+    Blog.create(req.body.blog, function(err, newPost){
+        if(err) {
+            console.log("error creating new post!");
+            res.render("new");
+        } else {
+            console.log("success");
+            res.redirect("/blogs");
+        }
+    });
+});
+
 app.listen(3006, function(){
     console.log("RESTful Blog is listenning on port 3000...");
-})
+});
