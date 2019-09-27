@@ -1,8 +1,9 @@
-var bodyParser = require("body-parser"),
-methodOverride = require("method-override"),
-mongoose       = require("mongoose"),
-express        = require("express"),
-app            = express();
+var bodyParser      = require("body-parser"),
+expressSanitizer    = require("express-sanitizer"),
+methodOverride      = require("method-override"),
+mongoose            = require("mongoose"),
+express             = require("express"),
+app                 = express();
 
 // app config
 mongoose.connect("mongodb://localhost:27017/restful_blog", { useNewUrlParser:true, useUnifiedTopology: true });
@@ -10,6 +11,7 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(methodOverride("_method"));
+app.use(expressSanitizer());
 
 // mongoose/model config
 var blogSchema = new mongoose.Schema({
@@ -45,6 +47,10 @@ app.get("/blogs/new", function(req, res){
 });
 
 app.post("/blogs", function(req, res){
+    // sanitize
+    req.body.blog.body = req.sanitizer(req.body.blog.body);
+    req.body.blog.title = req.sanitizer(req.body.blog.title);
+    req.body.blog.image = req.sanitizer(req.body.blog.image);
     /*
         since we named the form variables as part of a blog object ie blog[title], we can simply pass blog directly from body using body-parser
     */
@@ -83,6 +89,10 @@ app.get("/blogs/:id/edit", function(req, res){
 
 // UPDATE ROUTE
 app.put("/blogs/:id", function(req, res){
+    // sanitize
+    req.body.blog.body = req.sanitizer(req.body.blog.body);
+    req.body.blog.title = req.sanitizer(req.body.blog.title);
+    req.body.blog.image = req.sanitizer(req.body.blog.image);
     // we pass the id of the blog, the blog object itself, and a callback function
     Blog.findByIdAndUpdate(req.params.id, req.body.blog, function(err, updatedBlog){
         if(err){
